@@ -1,0 +1,24 @@
+log:
+  level: info
+  file: /tmp/mosdns.log
+
+plugins:
+
+  - tag: doh
+    type: forward
+    args:
+      upstreams:
+        - addr: https://208.67.222.222/dns-query
+          enable_pipeline: true
+
+  - tag: main
+    type: sequence
+    args:
+      - exec: prefer_ipv4
+      - exec: $doh
+
+  - tag: udp
+    type: udp_server
+    args:
+      entry: main
+      listen: 127.0.0.1:5533

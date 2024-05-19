@@ -1,0 +1,60 @@
+name: Tags Checker
+
+defaults:
+  run:
+    shell: bash
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2,14 * * *'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@main
+
+      - name: Read repo.json
+        id: repojson
+        run: |
+          echo "REPO_URL=$(jq -r '.repo_url' repo.json)" >> $GITHUB_ENV
+          echo "REPO_BRANCH=$(jq -r '.repo_branch' repo.json)" >> $GITHUB_ENV
+
+      - name: Fetch Latest Tag
+        id: fetch_latest_tag
+        run: |
+          echo "LATEST_TAG=$(git ls-remote --tags --refs $(jq -r '.repo_url' repo.json) | grep -o 'refs/tags/[vV]*.*' | sort -V | tail -n1 | sed 's/refs\/tags\///')" >> $GITHUB_ENV
+
+      - name: Compare Versions
+        id: compare_versions
+        run: |
+          LATEST_VERSION=${{ env.LATEST_TAG }}
+          CURRENT_VERSION=${{ env.REPO_BRANCH }}
+          
+          if [ "$LATEST_VERSION" != "$CURRENT_VERSION" ] && [ $(printf '%s\n' "$LATEST_VERSION" "$CURRENT_VERSION" | sort -V | head -n1) != "$LATEST_VERSION" ]; then
+            echo "UPDATE_NEEDED=true" >> $GITHUB_ENV
+          else
+            echo "UPDATE_NEEDED=false" >> $GITHUB_ENV
+          fi
+
+      - name: Update repo.json
+        if: env.UPDATE_NEEDED == 'true'
+        run: |
+          LATEST_VERSION=${{ env.LATEST_TAG }}
+          jq --arg LATEST_VERSION "$LATEST_VERSION" '.repo_branch = $LATEST_VERSION' repo.json > tmp.$$.json && mv tmp.$$.json repo.json
+          echo "New stable release version found: $LATEST_VERSION"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add repo.json
+          git commit -m "Update repo_branch to $LATEST_VERSION"
+          git push
+
+      - name: Delete Expired Workflows
+        uses: Mattraks/delete-workflow-runs@main
+        with:
+          retain_days: 0
+          keep_minimum_runs: 0
+          delete_workflow_pattern: tags-checker.yml
