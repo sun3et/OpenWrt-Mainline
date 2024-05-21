@@ -68,11 +68,9 @@ jobs:
 
           if [ "$TIME_DIFF" -gt 30 ]; then
             STATUS=stale
-            echo "BUILDER_STATUS=$STATUS" >> $GITHUB_ENV
-          else
-            echo "BUILDER_STATUS=$STATUS" >> $GITHUB_ENV
           fi
-          
+
+          echo "BUILDER_STATUS=$STATUS" >> $GITHUB_ENV
           echo "::notice file=README.md::🕒Time since last run: $TIME_DIFF days"
           echo "::notice file=README.md::🖥️Status of the last run: $STATUS"
 
