@@ -63,7 +63,7 @@ jobs:
             echo "Last run time: $LAST_RUN_TIME"
           else
             TIME_DIFF=$(( ($(date +%s) - $(date -d "$LAST_RUN_TIME" +%s)) / 86400 ))
-            echo "Last run time: $(TZ="Asia/Shanghai" date -d "$LAST_RUN_TIME" '+%Y-%m-%d %H:%M:%S')"
+            echo "::notice file=README.md::🕘Last run time: $(TZ="Asia/Shanghai" date -d "$LAST_RUN_TIME" '+%Y-%m-%d %H:%M:%S')"
           fi
 
           if [ "$TIME_DIFF" -gt 30 ]; then
@@ -72,15 +72,23 @@ jobs:
             echo "BUILDER_STATUS=$STATUS" >> $GITHUB_ENV
           fi
           
-          echo "Time since last run: $TIME_DIFF days"
-          echo "Status of the last run: $STATUS"
+          echo "::notice file=README.md::🕒Time since last run: $TIME_DIFF days"
+          echo "::notice file=README.md::🖥️Status of the last run: $STATUS"
 
-      - name: Trigger build
+      - name: Trigger Build
         if: env.BUILDER_STATUS != 'success' || steps.cacheHash.outputs.cache-hit != 'true'
         uses: peter-evans/repository-dispatch@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           event-type: Source Code Updater
+
+      - name: Notify Build Trigger
+        run: |
+          if [[ ${{ env.BUILDER_STATUS }} != 'success' || ${{ steps.cacheHash.outputs.cache-hit }} != 'true' ]]; then
+            echo "::notice file=README.md::📦Trigger build: true"
+          else
+            echo "::notice file=README.md::📦Trigger build: false"
+          fi
 
       - name: Delete Expired Workflows
         uses: Mattraks/delete-workflow-runs@main
