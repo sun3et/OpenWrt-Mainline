@@ -60,14 +60,15 @@ jobs:
           LAST_RUN_TIME=$(echo "$RESPONSE" | jq -r '.workflow_runs[0].updated_at')
           if [ "$LAST_RUN_TIME" == "null" ]; then
             TIME_DIFF=0
-            echo "Last run time: $LAST_RUN_TIME"
+            echo "::notice file=README.md::🕘Last run time: $LAST_RUN_TIME"
           else
             TIME_DIFF=$(( ($(date +%s) - $(date -d "$LAST_RUN_TIME" +%s)) / 86400 ))
             echo "::notice file=README.md::🕘Last run time: $(TZ="Asia/Shanghai" date -d "$LAST_RUN_TIME" '+%Y-%m-%d %H:%M:%S')"
           fi
 
           if [ "$TIME_DIFF" -gt 30 ]; then
-            echo "BUILDER_STATUS=stale" >> $GITHUB_ENV
+            STATUS=stale
+            echo "BUILDER_STATUS=$STATUS" >> $GITHUB_ENV
           else
             echo "BUILDER_STATUS=$STATUS" >> $GITHUB_ENV
           fi
