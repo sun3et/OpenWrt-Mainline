@@ -31,26 +31,22 @@ jobs:
       - name: Compare Versions
         id: compare_versions
         run: |
-          LATEST_VERSION=${{ env.LATEST_TAG }}
-          CURRENT_VERSION=${{ env.REPO_BRANCH }}
-          
-          if [ "$LATEST_VERSION" != "$CURRENT_VERSION" ] && [ $(printf '%s\n' "$LATEST_VERSION" "$CURRENT_VERSION" | sort -V | head -n1) != "$LATEST_VERSION" ]; then
+          if [ "${{ env.LATEST_TAG }}" != "${{ env.REPO_BRANCH }}" ] && [ "$(printf '%s\n' "${{ env.LATEST_TAG }}" "${{ env.REPO_BRANCH }}" | sort -V | head -n1)" != "${{ env.LATEST_TAG }}" ]; then
             echo "UPDATE_NEEDED=true" >> $GITHUB_ENV
           else
             echo "UPDATE_NEEDED=false" >> $GITHUB_ENV
-            echo "::notice::📡Already the latest version: $CURRENT_VERSION"
+            echo "::notice::📡Already the latest version: ${{ env.REPO_BRANCH }}"
           fi
 
       - name: Update repo.json
         if: env.UPDATE_NEEDED == 'true'
         run: |
-          LATEST_VERSION=${{ env.LATEST_TAG }}
-          jq --arg LATEST_VERSION "$LATEST_VERSION" '.repo_branch = $LATEST_VERSION' repo.json > tmp.$$.json && mv tmp.$$.json repo.json
-          echo "::notice::📡New stable release version found: $LATEST_VERSION"
+          jq --arg LATEST_VERSION "${{ env.LATEST_TAG }}" '.repo_branch = $LATEST_VERSION' repo.json > tmp.$$.json && mv tmp.$$.json repo.json
+          echo "::notice::📡New stable release version found: ${{ env.LATEST_TAG }}"
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add repo.json
-          git commit -m "Update repo_branch to $LATEST_VERSION"
+          git commit -m "Update repo_branch to ${{ env.LATEST_TAG }}"
           git push
 
       - name: Delete Expired Workflows
