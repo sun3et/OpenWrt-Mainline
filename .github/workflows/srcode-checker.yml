@@ -60,10 +60,10 @@ jobs:
           LAST_RUN_TIME=$(echo "$RESPONSE" | jq -r '.workflow_runs[0].updated_at')
           if [ "$LAST_RUN_TIME" == "null" ]; then
             TIME_DIFF=0
-            echo "::notice file=README.md::🕘Last run time: $LAST_RUN_TIME"
+            echo "::notice::🕘Last run time: $LAST_RUN_TIME"
           else
             TIME_DIFF=$(( ($(date +%s) - $(date -d "$LAST_RUN_TIME" +%s)) / 86400 ))
-            echo "::notice file=README.md::🕘Last run time: $(TZ="Asia/Shanghai" date -d "$LAST_RUN_TIME" '+%Y-%m-%d %H:%M:%S')"
+            echo "::notice::🕘Last run time: $(TZ="Asia/Shanghai" date -d "$LAST_RUN_TIME" '+%Y-%m-%d %H:%M:%S')"
           fi
 
           if [ "$TIME_DIFF" -gt 30 ]; then
@@ -71,8 +71,8 @@ jobs:
           fi
 
           echo "BUILDER_STATUS=$STATUS" >> $GITHUB_ENV
-          echo "::notice file=README.md::🕒Time since last run: $TIME_DIFF days"
-          echo "::notice file=README.md::🖥️Status of the last run: $STATUS"
+          echo "::notice::🕒Time since last run: $TIME_DIFF days"
+          echo "::notice::🖥️Status of the last run: $STATUS"
 
       - name: Trigger Build
         if: env.BUILDER_STATUS != 'success' || steps.cacheHash.outputs.cache-hit != 'true'
@@ -84,9 +84,9 @@ jobs:
       - name: Notify Build Trigger
         run: |
           if [[ ${{ env.BUILDER_STATUS }} != 'success' || ${{ steps.cacheHash.outputs.cache-hit }} != 'true' ]]; then
-            echo "::notice file=README.md::📦Trigger build: true"
+            echo "::notice::📦Trigger build: true"
           else
-            echo "::notice file=README.md::📦Trigger build: false"
+            echo "::notice::📦Trigger build: false"
           fi
 
       - name: Delete Expired Workflows

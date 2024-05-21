@@ -38,7 +38,7 @@ jobs:
             echo "UPDATE_NEEDED=true" >> $GITHUB_ENV
           else
             echo "UPDATE_NEEDED=false" >> $GITHUB_ENV
-            echo "::notice file=README.md::📡Already the latest version: $CURRENT_VERSION"
+            echo "::notice::📡Already the latest version: $CURRENT_VERSION"
           fi
 
       - name: Update repo.json
@@ -46,7 +46,7 @@ jobs:
         run: |
           LATEST_VERSION=${{ env.LATEST_TAG }}
           jq --arg LATEST_VERSION "$LATEST_VERSION" '.repo_branch = $LATEST_VERSION' repo.json > tmp.$$.json && mv tmp.$$.json repo.json
-          echo "::notice file=README.md::📡New stable release version found: $LATEST_VERSION"
+          echo "::notice::📡New stable release version found: $LATEST_VERSION"
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add repo.json
