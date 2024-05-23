@@ -62,7 +62,7 @@ jobs:
             TIME_DIFF=0
             echo "::notice::🕘Last run time: $LAST_RUN_TIME"
           else
-            TIME_DIFF=$(( ($(date +%s) - $(date -d "$LAST_RUN_TIME" +%s)) / 86400 ))
+            TIME_DIFF=$(awk 'BEGIN {print int((('$(date +%s)' - '$(date -d "$LAST_RUN_TIME" +%s)') / 86400) + 0.5)}')
             echo "::notice::🕘Last run time: $(TZ="Asia/Shanghai" date -d "$LAST_RUN_TIME" '+%Y-%m-%d %H:%M:%S')"
           fi
 
