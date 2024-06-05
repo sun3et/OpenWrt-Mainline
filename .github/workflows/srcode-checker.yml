@@ -64,10 +64,9 @@ jobs:
           else
             TIME_DIFF=$(awk 'BEGIN {print int((('$(date +%s)' - '$(date -d "$LAST_RUN_TIME" +%s)') / 86400) + 0.5)}')
             echo "::notice::🕘Last run time: $(TZ="Asia/Shanghai" date -d "$LAST_RUN_TIME" '+%Y-%m-%d %H:%M:%S')"
-          fi
-
-          if [ "$TIME_DIFF" -gt 30 ]; then
+            if [ "$TIME_DIFF" -gt 30 ]; then
             STATUS=stale
+            fi
           fi
 
           echo "BUILDER_STATUS=$STATUS" >> $GITHUB_ENV
